@@ -10,6 +10,7 @@ from datetime import date
 
 
 # FUNCTION DEFINITIONS
+
 def get_latlon_from_file():
     '''Reads in configuration file.''' 
     config = ConfigParser.ConfigParser()
@@ -41,30 +42,40 @@ def get_days():
         else:
             days.append(x - 8)
     return days
-    
-def get_forecast(url):
-    r = requests.get(url)
-    return json.loads(r.content)
 
 
-# class definition
-class ForecastNow():
-    def __init__(self, apikey, lat, lon):
+# CLASS DEFINITIONS
+
+class Forecast():
+    def __init__(self, apikey, lat, lon, time = None):
         self.apikey = apikey
         self.lat = lat
         self.lon = lon
-        self.url = 'https://api.forecast.io/forecast/' + apikey +  '/' + lat + ',' + lon
+        self.time = time
+        if time:
+            self.url = 'https://api.forecast.io/forecast/' + apikey +  '/' + lat + ',' + lon + ',' + time
+        else:
+            self.url = 'https://api.forecast.io/forecast/' + apikey +  '/' + lat + ',' + lon
     def load_forecast(self):
-        self.forecast = get_forecast(self.url)
+        r = requests.get(self.url)
+        self.forecast = json.loads(r.content)
+
+
+class ForecastNow(Forecast):
+    def get_forecast(self):
+        self.load_forecast()
         self.current = self.forecast['currently']
         _daily_data = self.forecast['daily']
         self.daily = _daily_data['data']
+
+
+# MAIN
 
 if __name__ == "__main__":
     apikey = get_apikey()
     latitude, longitude = get_latlon_from_file()
     todays_weather = ForecastNow(apikey, latitude, longitude)
-    todays_weather.load_forecast()
+    todays_weather.get_forecast()
     current_conditions = todays_weather.current
     for key, value in current_conditions.iteritems():
         print(key + ':' + str(value))
