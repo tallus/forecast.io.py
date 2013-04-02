@@ -156,33 +156,21 @@ class ForecastNow(Forecast):
         Returns False if no forecast can be loaded'''
         if not self.load_forecast():
             return False
-        try:
+        if 'currently' in self.forecast:
             self.current = self.forecast['currently']
-        except:
-            pass
-        try:
+        if 'minutely' in self.forecast:
             self.nexthour = self.forecast['minutely']
             self.nexthour_data= self.nexthour['data']
-        except:
-            pass
-        try:
+        if 'hourly' in self.forecast:
             self.hourly = self.forecast['hourly']
             self.hourly_data = self.hourly['data']
-        except:
-            pass
-        try:
+        if 'daily' in self.forecast:
             self.daily = self.forecast['daily']
             self.daily_data = self.daily['data']
-        except:
-            pass
-        try:
+        if 'alerts' in self.forecast
             self.alerts = self.forecast['alerts']
-        except:
-            pass
-        try:
+        if 'flags' in self.forecast:
             self.flags = self.forecast['flags']
-        except:
-            pass
         return True
 
 class ForecastTime(Forecast):
@@ -195,7 +183,8 @@ class ForecastTime(Forecast):
         '''Fetches the forecast. Needs to be called after creating object'''
         if  not self.load_forecast():
             return False
-        
+        else:
+            return True
 
 # MAIN
 
@@ -204,10 +193,11 @@ if __name__ == "__main__":
     apikey = get_apikey_from_file()
     latitude, longitude = get_latlon_from_file()
     
-    #weather = Forecast(apikey, 'si', latitude, longitude)
-    #if weather.load_forecast():
-    #    for key, value in weather.forecast.iteritems():
-    #        print key
+    time = get_timestamp(1976,07,04,12,00)
+    weather = Forecast(apikey, 'si', latitude, longitude, time)
+    if weather.get_forecast():
+      for key, value in weather.forecast.iteritems():
+            print key
     
     #todays_weather = ForecastNow(apikey, units, latitude, longitude)
     #if todays_weather.get_forecast():
