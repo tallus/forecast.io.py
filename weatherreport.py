@@ -53,7 +53,7 @@ def get_days():
             days.append(x - 8)
     return days
 
-def get_timestamp(year, month, day, hour = None ,minute = None, second = None, timezone = None):
+def get_timestamp(year, month, day, hour = 0 ,minute = 0, second = 0, timezone = None):
     '''Returns the number of seconds since Jan 1 1970. 
     Hour, minute, second are optional.
     Timezone is optional and supplied as a string (not a timezone object).
@@ -62,9 +62,9 @@ def get_timestamp(year, month, day, hour = None ,minute = None, second = None, t
         tz = timezone(timezone)
         dt = tz.localize(datetime(year, month, day, hour, minute, second))
         return timegm(dt.utctimetuple())
-    else
-        dt = datetime(year, month, day, hour, minute, second))
-        return int(time.mktime(dt.timetuple()))
+    else:
+        dt = datetime(year, month, day, hour, minute, second)
+        return int(mktime(dt.timetuple()))
 
 def from_timestamp(timestamp, timezone = None):
     ''''Returns a datetime.datetime object given a timestamp
@@ -77,37 +77,35 @@ def from_timestamp(timestamp, timezone = None):
     else:
         return datetime.fromtimestamp(timestamp)
 
+def printuc(unicodeobj):
+    ''' prints as unicode not ASCII'''
+    print(unicode(unicodeobj))
+
+
 # CLASS DEFINITIONS
 
 class Forecast():
     ''' Base class for forecasts using the forecast.io api
-    You should generally use the ForecastNow or ForecastTime child classes
-    to fetch a forecast/weather record, as this returns the entire forecast'''
-    def __init__(self, apikey, units, latitude, longitude, time = None):
-        self.apikey = apikey
-        self.units = units
-        self.lat = latitude
-        self.lon = longitude
-        self.time = time
-        if time:
-            self.url = 'https://api.forecast.io/forecast/' + apikey +  '/' + latitude + ',' + longitude + ',' + time + "?units=" + units
-        else:
-            self.url = 'https://api.forecast.io/forecast/' + apikey +  '/' + latitude + ',' + longitude + "?units=" + units
+    Creates an object containg the various forecasts for the present 
+    moment in time for the specified latitude and longitude if time 
+    is not present, otherwise at the specified time.
+    
+    The class takes the following parameters:
+    apikey, units , latitude, longitude, time
 
-    def load_forecast(self):
-        try:
-            r = requests.get(self.url)
-        except:
-            return False
-        else:
-            self.forecast = json.loads(r.content)
-            return True
+    units is one of us,si or uk. us gives Imperial measurements,
+    si metric. uk is as si except for wind speed in miles per hour.
 
-class ForecastNow(Forecast):
-    ''' Creates an object containg the various forecasts for the present 
-    moment in time for the specified latitude and longitude. 
+    Time is Epoch/unix time i.e. seconds since 1970-01-01 00:00 GMT
+    
     You will need to call the get_forecast method in order to fetch the data.
+   
+    N.B. all strings (both keys and values) are returned unicode encoded.
+
     The Forecasts are:
+    self.forecast           An list containing the entire forecast returned
+                            note self.current = self.forecast['currently'], 
+                            self.nexthour =self.forecast['minutely']
     self.current:           A list containing the current conditions at the 
                             latitude and longtitude specified.
     self.nexthour:          Forecast for the next hour, minute by minute.
@@ -122,7 +120,7 @@ class ForecastNow(Forecast):
     self.hourly             As above. Hour by hour for the next 48 hours
     self.hourly_data
     self.daily              As above. Day by day for the the next 7 days
-    self.daily_data     
+    self.daily_data         Based on aggregates that represent the whole day
     self.alerts             Any severe weather warnings issued. A list of
                             dictionaries contains:
                             title:      short text sumamry
@@ -130,19 +128,74 @@ class ForecastNow(Forecast):
                             uri:        url that contains detailed info
     self.flags              Meta data such as source of data see:
                             https://developer.darkskyapp.com/docs/v2
-    
-    N.B. Any one data set (current, nexthour, hourly, daily, alerts, flags) 
+                            sources = list of sources used, 
+                            si  = si units were used if present
+
+    In addition the following should be present
+
+    self.latitude           latitude requested
+    self.longtitude         longitude requested
+    self.timezone           IANA timezone used for the forecasts. N.B. the 
+                            api docs state is is preferable to use local
+                            settings if preference to this, where possible
+    self.offset             Timezone offset from GMT/UTC
+
+    N.B. Any one data set (current, nexthour, hourly, daily, alerts, flags etc) 
     may or may not be present. In determining a forecast you should check
     to see what if it is available at the most accurate level and fall back
     to the next most accurate if not. In particular it appears that nexthour
     is often  missing or lacking data. Alerts will only be present if there
     are actual alerts. No exceptions will be raised if data is missing.
+    
+    Forecasts/data sets can contain any of the following
 
-    The class takes the following parameters:
-    apikey, units , latitude, longitude
-    units is one of us,si or uk. 
-    us gives Imperial measurements, si metric. uk is as si except for wind speed
-    in miles per hour.
+    time                Epoch(unix) time at which the data point occurs
+    summary             Human readable summary
+    icon                Machine readable version of summary consisting of one of
+                        clear-day, clear-night, rain, snow, sleet, wind, fog,
+                        cloudy, partly-cloudy-day, or partly-cloudy-night
+                        These may change in future. You should set a sensible
+                        default if you rely on theses.
+
+    The following are typically grouped together in the data set,
+    as a dictionary/list of dictionaries. e.g. self.current['temperature'] 
+    
+    sunriseTime         Epoch/unix time. Daily only.
+    SunsetTime          
+    precipIntensity     "A numerical value representing the intensity 
+                        (in inches of liquid water per hour) of precipitation 
+                        occurring at the given time conditional on probability 
+                        (that is, assuming any precipitation occurs at all).
+                        A very rough guide is that a value of 0 corresponds 
+                        to no  precipitation, 0.002 corresponds to very light
+                        sprinkling, 0.017 corresponds to light precipitation,
+                        0.1 corresponds to moderate precipitation, and 
+                        0.4 corresponds to very heavy precipitation."
+                        us: Inches per hour si/uk: Millimeters per hour
+    precipProbability   Probability of precipitation expressed as a value 
+                        between 0 and 1 (not defined if precipIntenstiy is 0) 
+    precipType          String: rain,snow,sleet* or hail  *Also used to describe
+                        freezing rain, wintery mix,ice pellets
+                        (not defined if precipIntenstiy is 0) 
+    precipAccumulation  Daily only. Amount of snowfall expected Only present 
+                        when snow is expected
+                        us: Inches si/uk: Centimeters
+    temperature         us Degrees Fahrenheit si/uk: Degrees Celcius 
+                        Not present in daily.
+    temperatureMin      Daily only.
+    temperatureMax
+    temperatureMinTime  Daily only. Epoch time this will occur.
+    temperatuteMaxTime
+    windSpeed           us/uk: Miles per hour  si: Meters per second
+    windBearing         Direction in degrees where true north = 0 degrees
+    cloudCover          Precentage of cloud cover as a number between 0 & 1
+                        0 = clear sky, 0.4 =  scattered clouds 
+                        0.75 =  Broken cloud cover 1 = completely overcast
+    humidity            relative humidity  as bumber between 0 & 1
+    pressure            us: millibars si/uk:hectopascals (==millibars)
+    visibility          average visibilty, capped at 10 miles
+                        us:Miles si/uk: Kilometers
+
     Example:
 
     todays_weather = ForecastNow(apikey, 'si',  latitude, longitude)
@@ -151,11 +204,27 @@ class ForecastNow(Forecast):
     for key, value in current_conditions.iteritems():
         print(key   + ': ' + str(value))                        '''
 
+    def __init__(self, apikey, units, latitude, longitude, time = None):
+        self.apikey = apikey
+        self.units = units
+        self.lat = latitude
+        self.lon = longitude
+        self.timestamp = time
+        if time:
+            self.url = 'https://api.forecast.io/forecast/' + apikey +  '/' + latitude + ',' + longitude + ',' + str(time) + '?units=' + units
+        else:
+            self.url = 'https://api.forecast.io/forecast/' + apikey +  '/' + latitude + ',' + longitude + "?units=" + units
+
     def get_forecast(self):
         '''Fetches the forecast. Needs to be called after creating object
         Returns False if no forecast can be loaded'''
-        if not self.load_forecast():
+        try:
+            r = requests.get(self.url)
+        except:
             return False
+        else:
+            self.forecast = json.loads(r.content)
+
         if 'currently' in self.forecast:
             self.current = self.forecast['currently']
         if 'minutely' in self.forecast:
@@ -167,24 +236,28 @@ class ForecastNow(Forecast):
         if 'daily' in self.forecast:
             self.daily = self.forecast['daily']
             self.daily_data = self.daily['data']
-        if 'alerts' in self.forecast
+        if 'alerts' in self.forecast:
             self.alerts = self.forecast['alerts']
         if 'flags' in self.forecast:
             self.flags = self.forecast['flags']
+        if 'latitude' in self.forecast:
+            self.latitude = self.forecast['latitude'] # see also self.lat 
+        else:
+            self.latitude = self.lat
+        if 'longitude' in self.forecast:
+            self.longitude = self.forecast['longitude'] # see also self.lon
+        else:
+            self.longitude  = self.lon
+        if 'time' in self.forecast:
+            self.time = self.forecast['time'] # see also self.timestamp
+        else:
+            self.time = self.timestamp
+        if 'timezone' in self.forecast:
+            self.timezone = self.forecast['timezone']
+        if 'offset' in self.forecast:
+            self.offset = self.forecast['offset'] 
         return True
 
-class ForecastTime(Forecast):
-    '''Fetches the forecast/weather condtions for the specified latitude
-    and longitude for a specific moment in time ranging from approximately
-    60 years in the past to 10 years in the future (if the data exists).
-    Time is specified as unix time/UTC Epoch Time.'''
-
-    def get_forecast(self):
-        '''Fetches the forecast. Needs to be called after creating object'''
-        if  not self.load_forecast():
-            return False
-        else:
-            return True
 
 # MAIN
 
@@ -193,16 +266,31 @@ if __name__ == "__main__":
     apikey = get_apikey_from_file()
     latitude, longitude = get_latlon_from_file()
     
-    time = get_timestamp(1976,07,04,12,00)
+    time = get_timestamp(1976,07,04)
     weather = Forecast(apikey, 'si', latitude, longitude, time)
     if weather.get_forecast():
-      for key, value in weather.forecast.iteritems():
+        print('keys present:')
+        for key, value in weather.forecast.iteritems():
             print key
+        print('conditions at ' + str(weather.time))
+        for key, value in weather.current.iteritems():
+            print key +': ' + str(value)
+    else:
+        print('No Forecast')
     
-    #todays_weather = ForecastNow(apikey, units, latitude, longitude)
-    #if todays_weather.get_forecast():
-    #    current_conditions = todays_weather.current
-    #    for key, value in current_conditions.iteritems():
-    #        print(key   + ': ' + str(value))
+    print("========================================")
+
+    todays_weather = Forecast(apikey, units, latitude, longitude)
+    if todays_weather.get_forecast():
+        print("keys in daily")
+        for key, value in todays_weather.daily.iteritems():
+            print key
+        print("values in daily")
+        for key, value in todays_weather.daily.iteritems():
+            printuc(value)
+        printuc("summary: " + todays_weather.daily['summary'])
+        current_conditions = todays_weather.current
+        for key, value in current_conditions.iteritems():
+            printuc(key   + ': ' + str(value))
     else:
         print('No Forecast')
