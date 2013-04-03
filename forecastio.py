@@ -149,6 +149,7 @@ class Forecast():
                         sprinkling, 0.017 corresponds to light precipitation,
                         0.1 corresponds to moderate precipitation, and 
                         0.4 corresponds to very heavy precipitation."
+                        (as  measured inches per hour ,  or mm/24.5)
                         us: Inches per hour si/uk: Millimeters per hour
     precipProbability   Probability of precipitation expressed as a value 
                         between 0 and 1 (not defined if precipIntenstiy is 0) 
