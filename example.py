@@ -33,7 +33,7 @@ def get_apikey_from_file(keyfile = None):
 
 
 if __name__ == "__main__":
-    units = 'si'
+    units = 'uk'
     apikey = get_apikey_from_file()
     latitude, longitude = get_latlon_from_file()
     
@@ -58,20 +58,22 @@ if __name__ == "__main__":
         printuc("Weekly summary for the next 7 days:\n" 
                 + todays_weather.daily['summary'])
         
-        heading = [' ', 'Min Temp', 'Max Temp', 'Rain %', 'Summary']
+        heading = [' ', 'Min Temp', 'Max Temp', 'Rain', 'Summary']
         print(' '.join(('%*s' % (10, x) for x in heading)))
     
         days=get_days()
         for i in range(7):
             day = days[i]
             wdata = todays_weather.daily_data[i]
-            if 'precipProbability' in wdata:
-                precip = str(wdata['precipProbablity'] * 100) + '%'
+            if 'precipIntensity' in wdata:
+                if 'precipProbability' in wdata:
+                    precip = str(wdata['precipProbability'] * 100) + '%/' + str(round(wdata['precipIntensity'],2)) +'mm'
+                else:
+                    precip = str(round(wdata['precipIntensity'],2)) +'mm'
             else:
                 precip = '-'
             line = [day_abbr[day], str(wdata['temperatureMin']) + u'\xb0C',
                     str(wdata['temperatureMax']) + u'\xb0C', precip, wdata['summary']]
             print(' '.join(('%*s' % (10, x) for x in line)))
-    
     else:
         print('No Forecast')
