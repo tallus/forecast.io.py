@@ -1,11 +1,11 @@
 GNU LESSER GENERAL PUBLIC LICENSE
 =================================
 
-Version 3, 29 June 2007
+*Version 3, 29 June 2007*
 
- Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
- Everyone is permitted to copy and distribute verbatim copies
- of this license document, but changing it is not allowed.
+* Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>*
+Everyone is permitted to copy and distribute verbatim copies of this 
+license document, but changing it is not allowed.
 
 
   This version of the GNU Lesser General Public License incorporates
@@ -100,7 +100,7 @@ the following:
 
    d) Do one of the following:
 
-       0) Convey the Minimal Corresponding Source under the terms of this
+       0. Convey the Minimal Corresponding Source under the terms of this
        License, and the Corresponding Application Code in a form
        suitable for, and under terms that permit, the user to
        recombine or relink the Application with a modified version of
@@ -108,7 +108,7 @@ the following:
        manner specified by section 6 of the GNU GPL for conveying
        Corresponding Source.
 
-       1) Use a suitable shared library mechanism for linking with the
+       1. Use a suitable shared library mechanism for linking with the
        Library.  A suitable mechanism is one that (a) uses at run time
        a copy of the Library already present on the user's computer
        system, and (b) will operate properly with a modified version
@@ -121,9 +121,9 @@ the following:
    necessary to install and execute a modified version of the
    Combined Work produced by recombining or relinking the
    Application with a modified version of the Linked Version. (If
-   you use option 4d0, the Installation Information must accompany
+   you use option 5d0, the Installation Information must accompany
    the Minimal Corresponding Source and Corresponding Application
-   Code. If you use option 4d1, you must provide the Installation
+   Code. If you use option 5d1, you must provide the Installation
    Information in the manner specified by section 6 of the GNU GPL
    for conveying Corresponding Source.)
 
