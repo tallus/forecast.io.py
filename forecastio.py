@@ -27,16 +27,47 @@ from calendar import timegm
 import pytz
 from pytz import timezone
 from time import mktime
+import unittest
+import os
+
+class MyUnitTest(unittest.TestCase):
+    def test_get_timestamp(self):
+        result = get_timestamp(1970,1,1,0,0,0,'GMT')
+        self.assertEqual(result,0)
+
+    def test_from_timestamp(self):
+        result = from_timestamp(0,'GMT')
+        utc = pytz.utc
+        dt = datetime(1970,1,1,0,0,0,0,utc)
+        self.assertEqual(result, dt)
+
+    def test_get_days(self):
+        result = get_days(1)
+        self.assertEqual(result[0],1)
+
+class ForecastUnitTest(unittest.TestCase):
+    def setUp(self):
+        self.apikey = get_apikey_from_file()
+        self.time = get_timestamp(1968,01,07,02,30)
+        self.weather = Forecast(self.apikey, 'uk', 51.8965, 2.0784, self.time)
+        self.weather.get_forecast()
+
+    def test_latitude(self):
+        self.assertEqual(self.weather.latitude, 51.8965)
+
+    def test_current_conditions(self):
+        self.assertEqual(self.weather.current['icon'], 'partly-cloudy-day')
 
 # FUNCTION DEFINITIONS
 
-def get_days():
+def get_days(tnum = None):
     '''returns a list of days of the week as  integers, 
     where Monday is 0 and Sunday is 6,
     and days[0] = today e.g. if today is Tuesday days[0] == 1   
     Can be used with calendar.day_name and calendar.day_abbr'''
-    today = date.today()
-    tnum = today.weekday()
+    if not tnum:
+        today = date.today()
+        tnum = today.weekday()
     days = []
     for i in range(7):
         x = tnum + i
@@ -46,26 +77,27 @@ def get_days():
             days.append(x - 7)
     return days
 
-def get_timestamp(year, month, day, hour = 0 ,minute = 0, second = 0, timezone = None):
+def get_timestamp(year, month, day, hour = 0 ,minute = 0, second = 0, tzone = None):
     '''Returns the number of seconds since Jan 1 1970. 
     Hour, minute, second are optional.
     Timezone is optional and supplied as a string (not a timezone object).
     Naive local time is assumed if timezone is not supplied. '''
-    if timezone:
-        tz = timezone(timezone)
+    if tzone:
+        tz = timezone(tzone)
         dt = tz.localize(datetime(year, month, day, hour, minute, second))
         return timegm(dt.utctimetuple())
     else:
         dt = datetime(year, month, day, hour, minute, second)
         return int(mktime(dt.timetuple()))
 
-def from_timestamp(timestamp, timezone = None):
+def from_timestamp(timestamp, tzone = None):
     ''''Returns a datetime.datetime object given a timestamp
     Timezone is optional and supplied as a string (not a timezone object).
     Naive local time is assumed if timezone is not supplied. '''
-    if timezone:
-        tz = timezone(timezone)
-        ts= datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
+    if tzone:
+        tz = timezone(tzone)
+        utc = pytz.utc
+        ts = datetime.utcfromtimestamp(timestamp).replace(tzinfo=utc)
         return tz.normalize(ts.astimezone(tz))
     else:
         return datetime.fromtimestamp(timestamp)
@@ -74,6 +106,16 @@ def printuc(unicodeobj):
     ''' prints as unicode not ASCII'''
     #print(unicode(unicodeobj))
     print(unicodeobj.encode('utf-8'))
+
+def get_apikey_from_file(keyfile = None):
+    if keyfile:
+        f = open(keyfile, r)
+    else:
+        f = open(os.path.expanduser('~/forecast.io.api.key'), 'r')
+    key = f.readline()
+    f.close()
+    return key.rstrip()
+
 
 # CLASS DEFINITIONS
 
@@ -87,9 +129,7 @@ class Forecast():
     apikey, units , latitude, longitude, time
 
     units is one of us,si or uk. us gives Imperial measurements,
-    si metric. uk is as si except for wind speed in miles per hour.
-
-    Time is Epoch/unix time i.e. seconds since 1970-01-01 00:00 GMT
+    si metric. uk is as si except for wind speed in miles per hour.    Time is Epoch/unix time i.e. seconds since 1970-01-01 00:00 GMT
     
     You will need to call the get_forecast method in order to fetch the data.
    
@@ -104,9 +144,9 @@ class Forecast():
                             latitude and longtitude specified.
     self.nexthour:          Forecast for the next hour, minute by minute.
                             A list containing:
-                            summary -   a human readable summary of the forecast
-                            icon    -   a machine readable version of the above
-                            data    -   see below.
+                            summary -  a human readable summary of the forecast
+                            icon    -  a machine readable version of the above
+                            data    -  see below.
     self.nexthour_data:     A list of dictionaries containing the actual data
                             The contents of the dictionary may vary but
                             sould at least contain a time field (as unix time)
@@ -281,8 +321,10 @@ datapoints = ['time',
             'pressure',
             'visibility']
 
+    
 
 # MAIN
 
-#if __name__ == "__main__":
+if __name__ == "__main__":
+    unittest.main()
 
