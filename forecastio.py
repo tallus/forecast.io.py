@@ -108,12 +108,10 @@ def printuc(unicodeobj):
     print(unicodeobj.encode('utf-8'))
 
 def get_apikey_from_file(keyfile = None):
-    if keyfile:
-        f = open(keyfile, r)
-    else:
-        f = open(os.path.expanduser('~/forecast.io.api.key'), 'r')
-    key = f.readline()
-    f.close()
+    if not keyfile:
+        keyfile = os.path.expanduser('~/forecast.io.api.key')
+    with open(keyfile,'r') as f:
+        key = f.readline()
     return key.rstrip()
 
 
