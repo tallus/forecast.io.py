@@ -265,7 +265,10 @@ class Forecast():
         except:
             return False
         else:
-            self.forecast = json.loads(r.content)
+            if int(r.status_code) != 200:
+                return False
+            else:
+                self.forecast = json.loads(r.content)
 
         if 'currently' in self.forecast:
             self.current = self.forecast['currently']
