@@ -18,7 +18,7 @@
 
 
 from forecastio import Forecast
-from forecastio import get_days, get_timestamp, from_timestamp, printuc
+from forecastio import get_days, get_timestamp, from_timestamp, printuc, get_apikey_from_file
 import ConfigParser
 import os
 import datetime
@@ -37,15 +37,6 @@ def get_latlon_from_file(latlonfile = None):
         latitude =  config.get('location', 'latitude')
         longitude =  config.get('location', 'longitude')
     return latitude, longitude
-
-def get_apikey_from_file(keyfile = None):
-    if keyfile:
-        f = open(keyfile, r)
-    else:
-        f = open(os.path.expanduser('~/forecast.io.api.key'), 'r')
-    key = f.readline()
-    f.close()
-    return key.rstrip()
 
 
 if __name__ == "__main__":
