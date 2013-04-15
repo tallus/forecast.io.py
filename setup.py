@@ -14,7 +14,7 @@ setup(
                 forecast.io API version 2 (https://developer.darkskyapp.com/)\
                 you will need to register for an API key.
                 It allows for the creation of objects with easy access to \
-                the weather forecast data  the API provides."""
+                the weather forecast data  the API provides.""",
         classifiers = [
             'Development Status :: 3 - Alpha',
             'Environment :: Web Environment',
@@ -24,7 +24,7 @@ setup(
             'Programming Language :: Python :: 2.7'
             'Topic :: Scientific/Engineering :: Atmospheric Science'
             'Topic :: Software Development :: Libraries :: Python Modules'
-            ]
+            ],
         packages = ['forecastio',],
         package_data = {'' : ['lgpl-3.0.txt', 'gpl.txt', 'README']},
         include_package_data = True,
