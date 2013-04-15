@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(
         name = 'forecastio',
@@ -27,7 +27,6 @@ setup(
             ],
         packages = ['forecastio',],
         package_data = {'' : ['lgpl-3.0.txt', 'gpl.txt', 'README']},
-        include_package_data = True,
         install_requires = [
             'requests>= 0.8.2',
             'pytz>=2011k'
