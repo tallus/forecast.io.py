@@ -9,7 +9,7 @@ setup(
         author = 'Paul Munday',
         author_email = 'contactme@paulmunday.net',
         url = 'https://github.com/tallus/forecast.io.py',
-        license = 'lgpl-3.0.txt',
+        license = 'LGPLv3 (or later)',
         long_description = """ forecastio is a python module to access the \
                 forecast.io API version 2 (https://developer.darkskyapp.com/)\
                 you will need to register for an API key.
@@ -19,7 +19,7 @@ setup(
             'Development Status :: 3 - Alpha',
             'Environment :: Web Environment',
             'Intended Audience :: Developers',
-            'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
+            'License :: OSI Approved :: GNU Lesser General Public License v3  or later (LGPLv3+)'
             'Natural Language :: English',
             'Programming Language :: Python :: 2.7'
             'Topic :: Scientific/Engineering :: Atmospheric Science'
