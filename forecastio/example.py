@@ -31,13 +31,17 @@ def get_latlon_from_file(latlonfile = None):
     if latlonfile:
         config.read(latlonfile)
     else:
-        config.read([os.path.expanduser('~/.weatherreport.cfg'), 
-            '/etc/weatherreport.cfg', 'weatherreport.cfg'])
+        try:
+            config.read([os.path.expanduser('~/.weatherreport.cfg'), 
+                '/etc/weatherreport.cfg', 'weatherreport.cfg'])
+        except:
+            return 0, 0
     if config.has_section('location'):
-        latitude =  config.get('location', 'latitude')
-        longitude =  config.get('location', 'longitude')
-    return latitude, longitude
-
+        lat =  config.get('location', 'latitude')
+        lon =  config.get('location', 'longitude')
+        return lat, lon
+    else:
+        return 0, 0 
 
 if __name__ == "__main__":
     units = 'uk'
